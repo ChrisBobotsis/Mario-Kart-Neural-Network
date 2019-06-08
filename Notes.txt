@@ -1,0 +1,4 @@
+For some reason, when you move the window after running display_screen.py it does not update the position of the window...
+It seems like it always want it to be in a certain location. I'm not sure why.
+-----> Solved by assigning the second tuple in memdc.BitBlt
+
