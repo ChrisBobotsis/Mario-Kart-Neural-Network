@@ -17,6 +17,8 @@ import pyautogui
 # http://docs.activestate.com/activepython/3.3/pywin32/win32gui.html
 # 
 
+WIDTH = 568
+HEIGHT = 525
 
 def grab_screen(title=None):
 
@@ -36,6 +38,11 @@ def grab_screen(title=None):
 
     width = (right - left)
     height = (bottom - top)
+    # Width:   568, Height:   525
+
+    # This is done so that I have the same window size for the image data. 
+    win32gui.MoveWindow(hwin,left,top,WIDTH,HEIGHT,True)
+
     #pdb.set_trace()
 
     #returns int, the device context (DC) for the entire window, including title bar, menus, and scroll bars.
