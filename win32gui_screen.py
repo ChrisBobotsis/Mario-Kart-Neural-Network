@@ -20,6 +20,12 @@ import pyautogui
 WIDTH = 568
 HEIGHT = 525
 
+# Constants to remove black background from emulator window
+MENU_BAR_HEIGHT = 52
+TOP_BAR = 6
+BOTTOM_BAR = 18
+SIDE_BAR = 18
+
 def grab_screen(title=None):
 
 
@@ -38,6 +44,9 @@ def grab_screen(title=None):
 
     width = (right - left)
     height = (bottom - top)
+
+    # width, height = shrink(width,height)
+
     # Width:   568, Height:   525
 
     # This is done so that I have the same window size for the image data. 
@@ -112,17 +121,27 @@ def grab_screen(title=None):
     memdc.DeleteDC()
     win32gui.ReleaseDC(hwin, hwindc)
     win32gui.DeleteObject(bmp.GetHandle())
-
+    # (Pdb) screen.shape
+    # (525, 568, 3)
+    img = shrink(img)
     return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
     # return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
 
-
+def shrink(img):
+    #global MENU_BAR_HEIGHT, TOP_BAR, BOTTOM_BAR, SIDE_BAR
+    img = img[(MENU_BAR_HEIGHT+TOP_BAR):-BOTTOM_BAR,SIDE_BAR:-SIDE_BAR,:]
+    return img
 
 if __name__ == "__main__":
     show_time = False
     last_time = time.time()
+    count = 0
     while True:
         screen = grab_screen()
+        if count == 0:
+            cv2.imwrite('mario-kart.png',screen)
+            count = count + 1
+        #import pdb; pdb.set_trace()
         cv2.imshow('test',screen)
         if show_time:
             print(f'Loop took {time.time()-last_time}')
