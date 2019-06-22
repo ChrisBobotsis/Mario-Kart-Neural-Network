@@ -17,14 +17,12 @@ import keyboard
 import time
 import numpy as np
 
-#######
-'''recorded = keyboard.record(until='esc')
-
-import pdb; pdb.set_trace()'''
-#######
 
 
-def key_letter_to_vector(key_list):
+def key_letter_to_vector(flag_list):
+
+    # flag_list = x_flag,c_flag,left_flag,right_flag
+
     # The output vector will be 6*1
     # Options for Key_presses:
 
@@ -35,17 +33,11 @@ def key_letter_to_vector(key_list):
     # c (forward), left, x (drift)          [0,0,0,0,1,0]
     # no input                              [0,0,0,0,0,1]
 
-    c_flag, left_flag, right_flag, x_flag = (False,False,False,False)
+    x_flag = flag_list[0]
+    c_flag = flag_list[1]
+    left_flag = flag_list[2]
+    right_flag = flag_list[3]
 
-    for key in key_list:
-        if key == 'c':
-            c_flag = True
-        if key == 'x':
-            x_flag = True
-        if key == 'left':
-            left_flag = True
-        if key == 'right':
-            right_flag = True
 
     if (c_flag & left_flag & x_flag):
         key_list = np.array([0,0,0,0,1,0])
@@ -73,7 +65,7 @@ def key_list(recorded):
     # This function will take 
     return None
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
 
     key_list = []
 
@@ -97,7 +89,7 @@ if __name__ == "__main__":
 
         # Note that it can contain multiple of the same types of presses (i.e. [KeyboardEvent(f down), KeyboardEvent(f down), KeyboardEvent(f down)] )
         recorded = keyboard.stop_recording()
-
+        print(recorded)
         # This just appends a list of keys that were pressed down
         key_list.append(list(set([i.name for i in recorded if i.event_type == 'down'])))
 
@@ -117,3 +109,17 @@ if __name__ == "__main__":
     '''keyboard.wait(hotkey='esc')
 
     keyboard.write(text='f')'''
+
+if __name__ == "__main__":
+    while True:
+        x = keyboard.is_pressed('x')
+        c = keyboard.is_pressed('c')
+        l = keyboard.is_pressed('left')
+        r = keyboard.is_pressed('right')
+
+        vec = key_letter_to_vector([x,c,l,r])
+        vec = vec.reshape(1,6)
+
+        
+
+        print(vec)

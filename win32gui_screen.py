@@ -22,9 +22,14 @@ HEIGHT = 525
 
 # Constants to remove black background from emulator window
 MENU_BAR_HEIGHT = 52
+# Black border bars
 TOP_BAR = 6
 BOTTOM_BAR = 18
 SIDE_BAR = 18
+# Area where time is located
+TIME_BAR = 44
+# Bottom screen that shows map
+MAP_BAR = 240
 
 def grab_screen(title=None):
 
@@ -124,12 +129,12 @@ def grab_screen(title=None):
     # (Pdb) screen.shape
     # (525, 568, 3)
     img = shrink(img)
-    return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-    # return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+    return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+    #return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
 
 def shrink(img):
     #global MENU_BAR_HEIGHT, TOP_BAR, BOTTOM_BAR, SIDE_BAR
-    img = img[(MENU_BAR_HEIGHT+TOP_BAR):-BOTTOM_BAR,SIDE_BAR:-SIDE_BAR,:]
+    img = img[(MENU_BAR_HEIGHT+TOP_BAR+TIME_BAR):-BOTTOM_BAR-MAP_BAR,SIDE_BAR:-SIDE_BAR,:]
     return img
 
 if __name__ == "__main__":
@@ -138,9 +143,9 @@ if __name__ == "__main__":
     count = 0
     while True:
         screen = grab_screen()
-        if count == 0:
+        '''if count == 0:
             cv2.imwrite('mario-kart.png',screen)
-            count = count + 1
+            count = count + 1'''
         #import pdb; pdb.set_trace()
         cv2.imshow('test',screen)
         if show_time:

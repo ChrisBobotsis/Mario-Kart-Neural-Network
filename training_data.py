@@ -27,7 +27,12 @@ while train_on:
     print('Recording_keys')
     # Start key_board recording   TODO maybe this isn't enough time to get the keyspresses, not sure...
 
-    keyboard.start_recording()
+    x = keyboard.is_pressed('x')
+    c = keyboard.is_pressed('c')
+    left = keyboard.is_pressed('left')
+    right = keyboard.is_pressed('right')
+
+    q = keyboard.is_pressed('q')
 
     # Get screen of emulator
 
@@ -38,25 +43,25 @@ while train_on:
     time.sleep(0.01)
 
     # Finish keyboard recording
-
-    keys = keyboard.stop_recording()
-
-    key_list.append(keys) 
+    
+    key_list.append([x,c,left,right]) 
 
     # Check if stop key pressed
 
-    for key in keys:
-        if key.name == 'q':
-            train_on = False
-            break # No need to waste time checking more key names
+    if q == True:
+        train_on = False
 
     
 # Postprocessing: Change keys to names and then one-hot vectors, cut off X number of frames (and therefore inputs) since they will be pressing escape
-
+print('Done!\nProcessing Data')
 assert len(key_list) == len(screen_list), "Number of keys and frames not equal!"
 
 for idx in range(len(key_list)):
-    key_list[idx] = key_letter_to_vector(keyboard_event_to_key_letter(key_list[idx])) # key_list should be a one-hot array of (6,1)
+    #import pdb; pdb.set_trace()
+    #print(key_list[idx])
+    key_list[idx] = key_letter_to_vector(key_list[idx]) # key_list should be a one-hot array of (6,1)
+    #print(key_list[idx])
+    #import pdb; pdb.set_trace()
 
 
 # Add them to a numpy file
