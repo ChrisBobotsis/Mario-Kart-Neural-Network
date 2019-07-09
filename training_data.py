@@ -21,7 +21,7 @@ for i in range(5):
     print(5-i)
     time.sleep(1)
 
-
+start = time.time()
 
 while train_on:
     print('Recording_keys')
@@ -50,6 +50,7 @@ while train_on:
 
     if q == True:
         train_on = False
+        end = time.time()
 
     
 # Postprocessing: Change keys to names and then one-hot vectors, cut off X number of frames (and therefore inputs) since they will be pressing escape
@@ -75,7 +76,7 @@ for idx in range(len(key_list)):
 
 year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
 # We save the time to the file so that we don't overwrite anything
-np.save(arr = output, file = f'data/training_data/raw/train-data_{day}-{month}-{year}_{hour}-{minute}-{second}') 
+np.save(arr = output, file = f'data/training_data/raw/train-data_{day}-{month}-{year}_{hour}-{minute}-{second}-{int(len(key_list)/(end-start))}FPS') 
 
 print('Done')
 

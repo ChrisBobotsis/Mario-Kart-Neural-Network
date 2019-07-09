@@ -5,3 +5,8 @@ It seems like it always want it to be in a certain location. I'm not sure why.
 There still seems to be an issue when first starting the win32gui_screen.py as it also add parts of windows around the emulator window...
 It seems to fix itself if I restart or alter the window shape though
 
+
+https://stackoverflow.com/questions/8953844/import-module-from-subfolder
+
+
+

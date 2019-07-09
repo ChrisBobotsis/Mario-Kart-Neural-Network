@@ -129,6 +129,9 @@ def grab_screen(title=None):
     # (Pdb) screen.shape
     # (525, 568, 3)
     img = shrink(img)
+    #i(Pdb) img.shape
+    #(165, 532, 4)
+    # Height over width ~= 0.31
     return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
     #return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
 
