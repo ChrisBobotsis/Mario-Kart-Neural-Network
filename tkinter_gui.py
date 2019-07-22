@@ -255,42 +255,48 @@ class Window(Frame):
   
     def update_frame_entry(self, event=None):
 
-        frame = int(self.enter_time.get())
+        if self.enter_time.get().isdigit():
+            frame = int(self.enter_time.get())
 
-        if frame>=0 and frame<=self.max_frame:
-            self.frame = frame
+            
 
-        self.update_controller_label()
-        self.update_emulator_label()
-        self.update_frame_display()
+            if frame>=0 and frame<=self.max_frame:
+                self.frame = frame
+
+            self.update_controller_label()
+            self.update_emulator_label()
+            self.update_frame_display()
 
 
     def open_file(self):
         # Open window to select file
-        self.data_file = filedialog.askopenfile(initialdir="/", title ="Select File",filetypes=(("Numpy Files",".npy"),("All Files",".")))
-        # Get full directory of file -> C:/Users/...
-        name = self.data_file.name
-        # Close the file since we don't need it now
-        self.data_file.close()
-        self.data_file = np.load(name)
-        self.max_frame = len(self.data_file)-1 # len doesn't include 0 index
+        try:
+            self.data_file = filedialog.askopenfile(initialdir="/", title ="Select File",filetypes=(("Numpy Files",".npy"),("All Files",".")))
+            # Get full directory of file -> C:/Users/...
+            name = self.data_file.name
+            # Close the file since we don't need it now
+            self.data_file.close()
+            self.data_file = np.load(name)
+            self.max_frame = len(self.data_file)-1 # len doesn't include 0 index
 
-        # Auto centering snes image regardles of image size
-        snes_height = self.data_file[0][1].shape[0]
-  
-        snes_height = (HEIGHT - snes_height)/2 - 10
-       
-        self.snes_img.place(x = WIDTH/2 + 70, y = snes_height) 
+            # Auto centering snes image regardles of image size
+            snes_height = self.data_file[0][1].shape[0]
+    
+            snes_height = (HEIGHT - snes_height)/2 - 10
         
-        self.frame = 0
+            self.snes_img.place(x = WIDTH/2 + 70, y = snes_height) 
+            
+            self.frame = 0
 
-        self.update_controller_label()
-        self.update_emulator_label()
+            self.update_controller_label()
+            self.update_emulator_label()
 
-        
-        self.update_frame_display()
-        self.update_frame()
-        #import pdb; pdb.set_trace()
+            
+            self.update_frame_display()
+            self.update_frame()
+            #import pdb; pdb.set_trace()
+        except:
+            pass
         
 
     def update_frame(self):
