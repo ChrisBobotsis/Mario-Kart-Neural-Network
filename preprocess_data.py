@@ -70,4 +70,4 @@ for item in processed_list:
 
 year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
 
-np.save(arr=data_total,file=f'Full-DataSet-{month}-{day}-{year}_{hour}-{minute}-{second}')
+np.save(arr=data_total,file=f'data/training_data/full_data_set/Full-DataSet-{month}-{day}-{year}_{hour}-{minute}-{second}')
