@@ -76,7 +76,7 @@ for idx in range(len(key_list)):
 
 year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
 # We save the time to the file so that we don't overwrite anything
-np.save(arr = output, file = f'data/training_data/raw/train-data_{day}-{month}-{year}_{hour}-{minute}-{second}-{int(len(key_list)/(end-start))}FPS') 
+np.save(arr = output, file = f'data/training_data/1-raw/train-data_{day}-{month}-{year}_{hour}-{minute}-{second}-{int(len(key_list)/(end-start))}FPS') 
 
 print('Done')
 

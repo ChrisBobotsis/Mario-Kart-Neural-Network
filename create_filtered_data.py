@@ -3,8 +3,8 @@
 import numpy as np
 import os
 
-raw_dir = 'data/training_data/raw/'
-filtered_dir = 'data/training_data/filtered/'
+raw_dir = 'data/training_data/1-raw/'
+filtered_dir = 'data/training_data/2-filtered/'
 
 raw_list = os.listdir(raw_dir)
 

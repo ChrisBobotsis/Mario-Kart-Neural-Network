@@ -10,8 +10,8 @@ import os
 from PIL import Image
 import time
 
-NEW_WIDTH = 100
-NEW_HEIGHT = 32
+PREPROCESS_WIDTH = 100
+PREPROCESS_HEIGHT = 32
 
 N = 5
 
@@ -19,55 +19,57 @@ N = 5
 # Function resizes images to 100*32 (width*height)
 def resize(img):
     img = Image.fromarray(img)
-    img = img.resize((NEW_WIDTH,NEW_HEIGHT))
+    img = img.resize((PREPROCESS_WIDTH,PREPROCESS_HEIGHT))
     img = np.array(img)
     return img
 
-# Where are the files
-filtered_dir = 'data/training_data/filtered/'
-processed_dir = 'data/training_data/processed/'
-# List of the file names
-filtered_list = os.listdir(filtered_dir)
+if __name__ == "__main__":
 
-# For each file in feature list: resize the images and save it to the processed folder
-for item in filtered_list:
-    data = np.load(filtered_dir+item)
-    for idx in range(len(data)):
-        data[idx][1] = resize(data[idx][1])
+    # Where are the files
+    filtered_dir = 'data/training_data/2-filtered/'
+    processed_dir = 'data/training_data/3-processed/'
+    # List of the file names
+    filtered_list = os.listdir(filtered_dir)
 
-    name = processed_dir+item
+    # For each file in feature list: resize the images and save it to the processed folder
+    for item in filtered_list:
+        data = np.load(filtered_dir+item)
+        for idx in range(len(data)):
+            data[idx][1] = resize(data[idx][1])
 
-    if name in os.listdir(processed_dir):
-        name = name+'-new'
+        name = processed_dir+item
 
-    name = name+'.npy'
+        if name in os.listdir(processed_dir):
+            name = name+'-new'
 
-    np.save(arr=data,file=name)
+        name = name+'.npy'
 
-# Delete variables no longer being used
-del filtered_list
+        np.save(arr=data,file=name)
+
+    # Delete variables no longer being used
+    del filtered_list
 
 
-# Get all files in processed list now
+    # Get all files in processed list now
 
-processed_list = os.listdir(processed_dir)
+    processed_list = os.listdir(processed_dir)
 
-# Create sets of N time series inputs
+    # Create sets of N time series inputs
 
-'''
-for item in 
-'''
+    '''
+    for item in 
+    '''
 
-# Create one large file
+    # Create one large file
 
-data_total = []
+    data_total = []
 
-for item in processed_list:
-    data = np.load(processed_dir+item)
+    for item in processed_list:
+        data = np.load(processed_dir+item)
 
-    for idx in range(len(data)):
-        data_total.append(data[idx])
+        for idx in range(len(data)):
+            data_total.append(data[idx])
 
-year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
+    year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
 
-np.save(arr=data_total,file=f'data/training_data/full_data_set/Full-DataSet-{month}-{day}-{year}_{hour}-{minute}-{second}')
+    np.save(arr=data_total,file=f'data/training_data/4-full_data_set/Full-DataSet-{month}-{day}-{year}_{hour}-{minute}-{second}')

@@ -52,6 +52,8 @@ import time
 import numpy as np
 import os
 
+from sklearn.model_selection import train_test_split
+
 
 def conv_net_custom(input_shape=None,num_classifiers=None):
     
@@ -83,7 +85,11 @@ def conv_net_custom(input_shape=None,num_classifiers=None):
 
         #Tensorboard
         # have to use backslash (\) instead of forward slash (/) here for some reason 
-        t_board= TensorBoard(log_dir=f'\logs\{model_name}')
+
+        t_board= TensorBoard(log_dir=f'.\logs\{model_name}',update_freq=5000)
+
+        cp_callback = tf.keras.callbacks.ModelCheckpoint(f'data/model_checkpoints/{model_name}.ckpt',
+                                                 save_weights_only=True)
 
         #compile model using accuracy to measure model performance
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -95,15 +101,119 @@ def conv_net_custom(input_shape=None,num_classifiers=None):
 
         '''
 
-        return model,t_board
+        return model, t_board, cp_callback, model_name
+
+def conv_net_custom_3(input_shape=None,num_classifiers=None):
+    
+    if not input_shape or not num_classifiers:
+        print('You have to pass an input shape AND a number of classifiers!')
+    else:
+
+        year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
+        model_name = f'conv_net_custom_3-{month}-{day}-{year}_{hour}-{minute}-{second}'
+        os.mkdir(f'logs/{model_name}')
+
+        #create model
+        model = Sequential()
+        #add model layers
+        model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=input_shape))        
+        model.add(MaxPooling2D(pool_size=(2,2)))
+        #model.add(Dropout(0.2))
+
+        model.add(Conv2D(32, kernel_size=3, activation='relu'))
+        model.add(AveragePooling2D(pool_size=(2,2)))
+        #model.add(Dropout(0.5))
+
+        model.add(Flatten())
+
+        model.add(Dense(16, activation='relu'))
+        model.add(Dense(16,activation='relu'))
+
+        model.add(Dense(units=num_classifiers,activation='softmax'))
+
+        #Tensorboard
+        # have to use backslash (\) instead of forward slash (/) here for some reason 
+
+        t_board= TensorBoard(log_dir=f'.\logs\{model_name}',update_freq=5000)
+
+        cp_callback = tf.keras.callbacks.ModelCheckpoint(f'data/model_checkpoints/{model_name}.ckpt',
+                                                 save_weights_only=True)
+
+        #compile model using accuracy to measure model performance
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+        #train the model
+        '''
+
+        model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, callbacks=[t_board])
+
+        '''
+
+        return model, t_board, cp_callback, model_name
+
+def conv_net_custom_2(input_shape=None,num_classifiers=None):
+
+    # The need for this conv net is that I likely need a deeper layers to learn more
+    
+    if not input_shape or not num_classifiers:
+        print('You have to pass an input shape AND a number of classifiers!')
+    else:
+
+        year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
+        model_name = f'conv_net_custom_2-{month}-{day}-{year}_{hour}-{minute}-{second}'
+        os.mkdir(f'logs/{model_name}')
+
+        #create model
+        model = Sequential()
+        #add model layers
+        model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=input_shape))        
+        model.add(MaxPooling2D(pool_size=(2,2)))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(32, kernel_size=3, activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2,2)))
+        model.add(Dropout(0.2))
+
+        model.add(Conv2D(16, kernel_size=2, activation='relu'))
+        model.add(AveragePooling2D(pool_size=(2,2)))
+        model.add(Dropout(0.5))
+
+        model.add(Flatten())
+
+        model.add(Dense(16, activation='relu'))
+        model.add(Dense(16,activation='relu'))
+
+        model.add(Dense(units=num_classifiers,activation='softmax'))
+
+        #Tensorboard
+        # have to use backslash (\) instead of forward slash (/) here for some reason 
+        t_board= TensorBoard(log_dir=f'.\logs\{model_name}',update_freq=5000)
+
+        cp_callback = tf.keras.callbacks.ModelCheckpoint(f'data/model_checkpoints/{model_name}.ckpt',
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
+        #compile model using accuracy to measure model performance
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+        #train the model
+        '''
+
+        model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, callbacks=[t_board])
+
+        '''
+
+        return model, t_board, cp_callback, model_name
 
 if __name__ == "__main__":
 
+    
+    '''
     model, t_board = conv_net_custom(input_shape=(32,100,1),num_classifiers=6) 
 
     # model.fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1)    
 
-    '''
+    ''
     Set the input_shape to (286,384,1). Now the model expects an input with 4 dimensions. 
     This means that you have to reshape your image with .reshape(n_images, 286, 384, 1). 
     Now you have added an extra dimension without changing the data and your model is ready to run. 
@@ -111,7 +221,7 @@ if __name__ == "__main__":
 
     Y values should be of shape (n_samples,number of classifications)
 
-    '''
+    ''
 
     training_dir = None
     validation_dir = None
@@ -145,3 +255,21 @@ if __name__ == "__main__":
 
     #import pdb; pdb.set_trace()
     
+    '''
+
+    model, t_board, cp_callback, model_name = conv_net_custom(input_shape=(32,100,1),num_classifiers=6) 
+
+    # model.fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1)    
+
+    # training_data = np.load('data/training_data/final_data_set/Full-DataSet-07-21-2019_22-30-46.npy')
+
+    X = np.load('data/training_data/6-ready_for_model/X_Full-DataSet-07-21-2019_22-30-46.npy')
+    Y = np.load('data/training_data/6-ready_for_model/Y_Full-DataSet-07-21-2019_22-30-46.npy')
+
+    X = X/255
+
+    #import pdb; pdb.set_trace()
+
+    model.fit(x=X,y=Y,validation_split=0.2,epochs=10,callbacks=[t_board,cp_callback]) #default verbose gives progress for each epoch   # ,callbacks=[t_board]
+
+    model.save(f'data/models/{model_name}')
