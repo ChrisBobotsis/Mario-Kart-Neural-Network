@@ -54,6 +54,13 @@ import os
 
 from sklearn.model_selection import train_test_split
 
+def remove_mario(X):
+
+    for idx in range(len(X)):
+        X[idx][18:32,42:58] = int(255/2)
+    
+    return X
+
 
 def conv_net_custom(input_shape=None,num_classifiers=None):
     
@@ -104,6 +111,8 @@ def conv_net_custom(input_shape=None,num_classifiers=None):
         return model, t_board, cp_callback, model_name
 
 def conv_net_custom_3(input_shape=None,num_classifiers=None):
+
+    # conv_net_custom with no dropout
     
     if not input_shape or not num_classifiers:
         print('You have to pass an input shape AND a number of classifiers!')
@@ -264,6 +273,7 @@ if __name__ == "__main__":
     # training_data = np.load('data/training_data/final_data_set/Full-DataSet-07-21-2019_22-30-46.npy')
 
     X = np.load('data/training_data/6-ready_for_model/X_Full-DataSet-07-21-2019_22-30-46.npy')
+    X = remove_mario(X)
     Y = np.load('data/training_data/6-ready_for_model/Y_Full-DataSet-07-21-2019_22-30-46.npy')
 
     X = X/255

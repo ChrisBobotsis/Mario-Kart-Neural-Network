@@ -21,6 +21,12 @@ inputs = {
 
 }
 
+def remove_mario(img):
+
+    img[18:32,42:58] = int(255/2)
+    
+    return img
+
 def vec_to_input(vec):
     #import pdb; pdb.set_trace()
     index = vec.argmax()
@@ -62,8 +68,11 @@ def keyboard_release():
 
 if __name__ == "__main__":
 
-    filepath = 'data/models/conv_net_custom-07-28-2019_11-33-29'
+    filepath_dir = 'data/models/'
+    file_name = 'conv_net_custom-08-03-2019_23-37-06'#'conv_net_custom-07-28-2019_11-33-29'
     
+    filepath = filepath_dir+file_name
+
     model = load_model(
         filepath,
         custom_objects=None,
@@ -85,6 +94,9 @@ if __name__ == "__main__":
 
     freq = 10
 
+    X_values = []
+    Y_values = []
+
     for i in range(5)[::-1]:
         print(i)
         time.sleep(i)
@@ -98,24 +110,30 @@ if __name__ == "__main__":
             t = time.time()
             img = grab_screen()
             img = resize(img)
+            img = remove_mario(img)
             img = img.reshape(1,32,100,1)
 
-            input = img_to_input(img,model)
+            X_values.append(img)
+
+            img = img/255
+
+            Y_values.append(model.predict(img))
+
+            prediction = img_to_input(img,model)
 
             keyboard_release()
 
             if count%freq==0: 
                 keyboard_release()
-            elif input!=None:
-                keyboard.press(input)
+            elif prediction!=None:
+                keyboard.press(prediction)
 
             if keyboard.is_pressed('w'):
                 play_on = False
                 keyboard_release()
                 print('...Model Paused...')
             
-            time.sleep(1)
-
+            #time.sleep(0.2)
             count+=1
 
             print(f'Time for loop: {time.time()-t}')
@@ -124,7 +142,7 @@ if __name__ == "__main__":
         if keyboard.is_pressed('r'):
             play_on = True
             print('...Ready to Restart!...')
-    
+
         # Outer loop while model is not being used used to quit completely            
         if keyboard.is_pressed('q'):
             loop = False
@@ -161,4 +179,27 @@ if __name__ == "__main__":
         elif keyboard.is_pressed('-'):
             freq = 10
             print(f'Frequency is:   {freq}')
+
+    valid_input = False
+
+    while not valid_input:
+    
+        i = input('Do you want to save that file? (Y/N):     ')
+
+        if i not in ['Y','N']:
+            print('Invalid Input, try again')
+        else:
+            valid_input = True
+
+    data = []
+
+    if i == 'Y':
+        for idx in range(len(X)):
+            data.append([Y[idx],X[idx]])
+        np.save(arr=data,file=('data/model_analysis/'+file_name))
+    elif i == 'N':
+        print('Not saving file')
+
+
+    
         

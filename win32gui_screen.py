@@ -129,6 +129,8 @@ def grab_screen(title=None):
     # (Pdb) screen.shape
     # (525, 568, 3)
     img = shrink(img)
+
+    #Remove mario: img[95:165:,200:310] = 0
     #i(Pdb) img.shape
     #(165, 532, 4)
     # Height over width ~= 0.31
