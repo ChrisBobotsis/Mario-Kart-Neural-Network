@@ -54,12 +54,28 @@ import os
 
 from sklearn.model_selection import train_test_split
 
+from PIL import Image
+
 def remove_mario(X):
 
     for idx in range(len(X)):
         X[idx][18:32,42:58] = int(255/2)
     
     return X
+
+def resize_32by32(X):
+
+    tmp = []
+
+    for idx in range(len(X)):
+        img = Image.fromarray(X[idx].reshape(32,100))
+        img = img.resize((32,32))
+        tmp.append(np.array(img).reshape(32,32,1))
+
+    tmp = np.array(tmp)
+    
+    return tmp
+
 
 
 def conv_net_custom(input_shape=None,num_classifiers=None):
@@ -75,7 +91,7 @@ def conv_net_custom(input_shape=None,num_classifiers=None):
         #create model
         model = Sequential()
         #add model layers
-        model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=input_shape))        
+        model.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=input_shape))        
         model.add(MaxPooling2D(pool_size=(2,2)))
         model.add(Dropout(0.2))
 
@@ -266,7 +282,23 @@ if __name__ == "__main__":
     
     '''
 
-    model, t_board, cp_callback, model_name = conv_net_custom(input_shape=(32,100,1),num_classifiers=6) 
+    valid_response = False
+
+    while valid_response == False:
+        i = input('Are you using:\n(a) 32 by 100 images\nOR\n(b) 32 by 32 images? (a/b): ')
+
+        if i not in ['a','b']:
+            print('Enter a valid input!')
+        else:
+            valid_response = True
+
+    if i == 'a':
+        shape = (32,100,1)
+    elif i == 'b':
+        shape = (32,32,1)
+
+
+    model, t_board, cp_callback, model_name = conv_net_custom(input_shape=shape,num_classifiers=6) 
 
     # model.fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1)    
 
@@ -274,6 +306,8 @@ if __name__ == "__main__":
 
     X = np.load('data/training_data/6-ready_for_model/X_Full-DataSet-07-21-2019_22-30-46.npy')
     X = remove_mario(X)
+    if i == 'b':
+        X = resize_32by32(X)
     Y = np.load('data/training_data/6-ready_for_model/Y_Full-DataSet-07-21-2019_22-30-46.npy')
 
     X = X/255

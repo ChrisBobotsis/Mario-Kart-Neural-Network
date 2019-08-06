@@ -10,6 +10,8 @@ from preprocess_data import resize, PREPROCESS_HEIGHT, PREPROCESS_WIDTH
 
 from tensorflow.keras.models import load_model
 
+from PIL import Image
+
 inputs = {
 
     'forward':              'c',
@@ -22,9 +24,17 @@ inputs = {
 }
 
 def remove_mario(img):
-
+    # This is based on the 32*100 grascale image
     img[18:32,42:58] = int(255/2)
     
+    return img
+
+def resize_32by32(img):
+
+    img = Image.fromarray(img)
+    img = img.resize((32,32))
+    img = np.array(img)
+
     return img
 
 def vec_to_input(vec):
@@ -69,7 +79,7 @@ def keyboard_release():
 if __name__ == "__main__":
 
     filepath_dir = 'data/models/'
-    file_name = 'conv_net_custom-08-03-2019_23-37-06'#'conv_net_custom-07-28-2019_11-33-29'
+    file_name = 'conv_net_custom-08-03-2019_23-37-06'
     
     filepath = filepath_dir+file_name
 
@@ -82,6 +92,16 @@ if __name__ == "__main__":
     s_flag = True
     count = 0
 
+    valid_response = False
+
+    while valid_response == False:
+        input_option = input('Are you using:\n(a) 32 by 100 images\nOR\n(b) 32 by 32 images? (a/b): ')
+
+        if input_option not in ['a','b']:
+            print('Enter a valid input!')
+        else:
+            valid_response = True
+
     while s_flag==True:
         if count%20000 == 0:
             print('Waiting to start (press \'s\')')
@@ -92,7 +112,8 @@ if __name__ == "__main__":
     play_on = True
     loop = True
 
-    freq = 10
+    freq = 100
+    count = 1
 
     X_values = []
     Y_values = []
@@ -100,7 +121,7 @@ if __name__ == "__main__":
     for i in range(5)[::-1]:
         print(i)
         time.sleep(i)
-    count = 1
+    
 
     # Having this loop True means the program will not end
     while loop == True:
@@ -111,7 +132,11 @@ if __name__ == "__main__":
             img = grab_screen()
             img = resize(img)
             img = remove_mario(img)
-            img = img.reshape(1,32,100,1)
+            if input_option == 'a':
+                img = img.reshape(1,32,100,1)
+            elif input_option == 'b':
+                img = resize_32by32(img)
+                img = img.reshape(1,32,32,1)
 
             X_values.append(img)
 
@@ -127,27 +152,18 @@ if __name__ == "__main__":
                 keyboard_release()
             elif prediction!=None:
                 keyboard.press(prediction)
+            
+            #time.sleep(0.1)
+            count+=1
+
+            print(f'Time for loop: {time.time()-t}')
+            print(f'Frequency is:   {freq}')
 
             if keyboard.is_pressed('w'):
                 play_on = False
                 keyboard_release()
                 print('...Model Paused...')
-            
-            #time.sleep(0.2)
-            count+=1
-
-            print(f'Time for loop: {time.time()-t}')
-            print(f'Frequency is:   {freq}')
-        
-        if keyboard.is_pressed('r'):
-            play_on = True
-            print('...Ready to Restart!...')
-
-        # Outer loop while model is not being used used to quit completely            
-        if keyboard.is_pressed('q'):
-            loop = False
-            print('...Quit...')
-            
+                
 
         if keyboard.is_pressed('1'):
             freq = 1
@@ -176,9 +192,21 @@ if __name__ == "__main__":
         elif keyboard.is_pressed('9'):
             freq = 9
             print(f'Frequency is:   {freq}')
-        elif keyboard.is_pressed('-'):
+        elif keyboard.is_pressed('0'):
             freq = 10
             print(f'Frequency is:   {freq}')
+        elif keyboard.is_pressed(']'):
+            freq = 100
+            print(f'Frequency is:   {freq}')
+
+        if keyboard.is_pressed('r'):
+            play_on = True
+            print('...Ready to Restart!...')
+
+        # Outer loop while model is not being used used to quit completely            
+        if keyboard.is_pressed('q'):
+            loop = False
+            print('...Quit...')
 
     valid_input = False
 
