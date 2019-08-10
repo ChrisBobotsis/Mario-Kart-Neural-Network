@@ -9,6 +9,7 @@ import pdb
 import time
 import pyautogui
 
+from preprocess_data import resize
 
 #def get_screen(title = None,width = 80, height = 60):
 # http://docs.activestate.com/activepython/3.3/pywin32/win32gui.html
@@ -130,7 +131,8 @@ def grab_screen(title=None):
     # (525, 568, 3)
     img = shrink(img)
 
-    #Remove mario: img[95:165:,200:310] = 0
+    #Remove mario: 
+    img[90:165:,220:315] = int(255/2)
     #i(Pdb) img.shape
     #(165, 532, 4)
     # Height over width ~= 0.31
@@ -148,6 +150,8 @@ if __name__ == "__main__":
     count = 0
     while True:
         screen = grab_screen()
+        #screen = resize(screen)
+        #screen[18:32,41:59] = int(255/2)
         '''if count == 0:
             cv2.imwrite('mario-kart.png',screen)
             count = count + 1'''

@@ -12,6 +12,9 @@ from tensorflow.keras.models import load_model
 
 from PIL import Image
 
+from conv_net import remove_mario
+
+
 inputs = {
 
     'forward':              'c',
@@ -23,11 +26,6 @@ inputs = {
 
 }
 
-def remove_mario(img):
-    # This is based on the 32*100 grascale image
-    img[18:32,42:58] = int(255/2)
-    
-    return img
 
 def resize_32by32(img):
 
@@ -130,8 +128,8 @@ if __name__ == "__main__":
 
             t = time.time()
             img = grab_screen()
-            img = resize(img)
             img = remove_mario(img)
+            img = resize(img)
             if input_option == 'a':
                 img = img.reshape(1,32,100,1)
             elif input_option == 'b':
