@@ -47,9 +47,9 @@ Further to this, I decided to train the model on only tracks from two cups:
 
 ![](images/Flower_Cup.PNG)
 
-My intention was to leave the **Star Cup** as a test set.
+My intention was to leave the **Star Cup** as a **test set**.
 
-For about 3 minutes of training data (~30FPS,Grayscale,165x532) files were about ~350MB. Due to the size of the files I decided against RGB as the files size would be trippled. Files were saved as np.save.
+For about 3 minutes of training data (~30FPS,Grayscale,165x532) files were about ~350MB. Due to the size of the files I decided against RGB as the files size would be trippled. Files were saved with `np.save()`.
 
 Training data was generated using the script `training_data.py` which uses `grap_screen()` from `win32gui_screen.py` to get the image data from the emulator.
 
@@ -81,7 +81,7 @@ Here is an example of how it looks in action:
 
 In particular I wanted an option to:
 - load training data files
-- play frames in succession (at differing FPS)
+- play frames in succession (at varying FPS)
 - have the ability to pause
 - rewind and forward frames one by one
 - enter a frame I would like to see
@@ -94,12 +94,12 @@ The main purpose of analyzing the training data was to remove unwanted examples.
 
 As mentioned just above, `create_filtered_data.py` was used to remove unwanted samples from the raw data. However, many other scripts were used to perform various operations on the data to ensure that the raw data was transformed into data that was ready to be passed into the model. The scripts were as follows:
 
-1. `create_filered_data.py` -> Removes unwanted examples (saves to folder `data/training_data/2-filtered')
-2. `preprocess_data.py` -> Reduces img size to 32x100 (saves to folder `data/training_data/3-processed'), and creates one large file of all training examples (saves to folder `data/training_data/4-full_data_set')
-3. `create_final_dataset.py` -> mirrors data (forward_left->forward_right, etc.) and ensure classes are balanced for training (saves to folder `data/training_data/5-final_data_set')
-4. `create_model_ready_data.py` -> creates a file of X values and a file of Y values (saves to folder `data/training_data/6-ready_for_model')
+1. `create_filered_data.py` -> Removes unwanted examples (saves to folder `data/training_data/2-filtered`)
+2. `preprocess_data.py` -> Reduces img size to 32x100 (saves to folder `data/training_data/3-processed`), and creates one large file of all training examples (saves to folder `data/training_data/4-full_data_set`)
+3. `create_final_dataset.py` -> mirrors data (forward_left->forward_right, etc.) and ensure classes are balanced for training (saves to folder `data/training_data/5-final_data_set`)
+4. `create_model_ready_data.py` -> creates a file of X values and a file of Y values (saves to folder `data/training_data/6-ready_for_model`)
 
-Originally Mario was present in the image data, but upon bad performance of the model on live-testing Mario was removed and the model performed better. 
+Originally Mario was present in the image data, but upon bad performance of the model on live-testing Mario (actually getting the model to play Super Mario Kart) was removed and the model performed better. 
 
 Here is an image with Mario:
 
@@ -113,7 +113,7 @@ The idea was that the model was looking at Mario's aspect and not at the actual 
 
 ## Creating a model
 
-The following model was started with and was the one what happened to work the best:
+The following model was initially used:
 
 ### Model A
 
@@ -121,23 +121,110 @@ The following model was started with and was the one what happened to work the b
         #create model
         model = Sequential()
         #add model layers
-        model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=input_shape))        
-        model.add(MaxPooling2D(pool_size=(2,2)))
-        model.add(Dropout(0.2))
+        model.add(Conv2D(filters=layer1_filters, kernel_size=layer1_kernel, activation='relu', input_shape=input_shape))        
+        model.add(MaxPooling2D(pool_size=layer1_maxpool))
+        model.add(Dropout(layer1_dropout))
 
-        model.add(Conv2D(32, kernel_size=3, activation='relu'))
-        model.add(AveragePooling2D(pool_size=(2,2)))
-        model.add(Dropout(0.5))
+        model.add(Conv2D(filters=layer2_filters, kernel_size=layer2_kernel, activation='relu'))
+        model.add(AveragePooling2D(pool_size=layer2_avgpool)
+        model.add(Dropout(layer2_dropout))
 
         model.add(Flatten())
 
-        model.add(Dense(16, activation='relu'))
-        model.add(Dense(16,activation='relu'))
+        model.add(Dense(units=layer3_units, activation='relu'))
+        model.add(Dense(units=layer4_units,activation='relu'))
 
         model.add(Dense(units=num_classifiers,activation='softmax'))
 ```
 
-An alternate model (see below) with another layers was tested but did resulted in a reduced accuracy after training for the same amount of epochs and resulted in the same degradation in learning as the model above. Therefore this model was not used:
+The following variables were tested over a grid search to determine optimal parameters for the model:
+
+```
+Layers:
+
+        Grid search 1 -> Layer 1:
+
+                layer1_filters = [64,32], 
+                layer1_kernel = [2,3,5], 
+                layer1_maxpool = [(2,2),(3,3)], 
+                layer1_dropout = [0,0.2,0.3,0.5],
+        
+        Grid Search 2 -> Layer 2:
+
+                layer2_filters = [64,32],
+                layer2_kernel = [2,3,5],
+                layer2_avgpool = [(2,2),(3,3)], 
+                layer2_dropout = [0,0.2,0.3,0.5],
+        
+        Grid Search 3 -> Layer 3:
+
+                layer3_units = [4,8,16],
+        
+        Grid Search 4 -> Layer 4:
+
+                layer4_units = [4,8,16],
+
+Grid Search 5 -> Weight Initializers:
+
+        optimizer = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
+
+Grid Search 6 -> Batch Size and Epochs:
+
+        batch_size = [16,32,64]
+
+All were performed with  the following epoch: 
+
+        epochs = [1] # I am using 1 epoch just because I don't want to spend too much time on each possible grid
+
+```
+
+As explained above, there were a total of 6 grid searches. Ideally a search would have been performed over all of these variables, but that would require +32,000 possile models to assess which is just not feasible. The idea is that the global optima for each of these parameters would be the individual local optima for each grid search. The top performing grids for each search were as follows:
+
+```
+Best: 0.6870708924291142 using {'epochs': 1, 'layer1_dropout': 0.2, 'layer1_filters': 64, 'layer1_kernel': 3, 'layer1_maxpool': (2, 2)}
+
+Best: 0.6872577372214911 using {'epochs': 1, 'layer2_avgpool': (3, 3), 'layer2_dropout': 0.5, 'layer2_filters': 32, 'layer2_kernel': 3}
+
+Best: 0.4983887388092484 using {'epochs': 1, 'layer3_units': 16}
+
+Best: 0.5305518816394212 using {'epochs': 1, 'layer4_units': 16}
+
+Best: 0.6264808889918915 using {'epochs': 1, 'batch_size': 16}
+
+Best: 0.7173503750927802 using {'epochs': 1, 'optimizer': 'RMSprop'}
+```
+
+Following these results, a further grid search was performed on the learning rate for RMSprop (note, as per Keras documentation [https://keras.io/optimizers/] only the learning rate is recommended to be tuned):
+
+```
+learn_rate = [0.0001, 0.0005, 0.001, 0.005, 0.01]
+```
+
+The results for this grid search were as follows:
+
+```
+Best: 0.7184868074014622 using {'epochs': 1, 'learn_rate': 0.001, 'optimizer': <class 'tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop'>}
+```
+
+Therefore, the learning rate was best with the default value.
+
+Now, all of these parameters were used to test the model again:
+
+```
+Epoch 10/10
+51388/51388 [==============================] - 478s 9ms/sample - loss: 0.6404 - acc: 0.7554 - val_loss: 0.5736 - val_acc: 0.7838
+```
+
+This was a definite improvement over the previous model which had a 70% accuracy for both the training and validation set (note both of these models were trained with a 80:20 training validation split)
+
+Now that the model we will use for testing has been validated, the model was trained on the entire dataset (as oposed to a 80:20 split). The following results were obtained:
+
+```
+Accuracy: 0.7613
+```
+
+
+An alternate model (see below) with another layer was tested but did result in a reduced accuracy (note a grid search was not performed) after training for the same amount of epochs and resulted in the same degradation in learning as the model above. Therefore this model was not used:
 
 ### Model B
 
@@ -145,24 +232,25 @@ An alternate model (see below) with another layers was tested but did resulted i
         #create model
         model = Sequential()
         #add model layers
-        model.add(Conv2D(64, kernel_size=5, activation='relu', input_shape=input_shape))        
-        model.add(MaxPooling2D(pool_size=(2,2)))
-        model.add(Dropout(0.2))
+        model.add(Conv2D(filters=layer1_filters, kernel_size=layer1_kernel, activation='relu', input_shape=input_shape))        
+        model.add(MaxPooling2D(pool_size=layer1_maxpool)
+        model.add(Dropout(layer1_dropout))
 
-        model.add(Conv2D(32, kernel_size=3, activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2,2)))
-        model.add(Dropout(0.2))
+        model.add(Conv2D(filters=layer2_filters, kernel_size=layer2_kernel, activation='relu'))
+        model.add(MaxPooling2D(pool_size=layer2_maxpool))
+        model.add(Dropout(layer2_dropout))
 
-        model.add(Conv2D(16, kernel_size=2, activation='relu'))
-        model.add(AveragePooling2D(pool_size=(2,2)))
-        model.add(Dropout(0.5))
+        model.add(Conv2D(filters=layer3_filters, kernel_size=layer3_kernel, activation='relu'))
+        model.add(AveragePooling2D(pool_size=layer3_avgpool))
+        model.add(Dropout(layer3_dropout))
 
         model.add(Flatten())
 
-        model.add(Dense(16, activation='relu'))
-        model.add(Dense(16,activation='relu'))
+        model.add(Dense(units=layer4_units, activation='relu'))
+        model.add(Dense(units=layer5_units, activation='relu'))
 
         model.add(Dense(units=num_classifiers,activation='softmax'))
+
 ```
 
 ## Results

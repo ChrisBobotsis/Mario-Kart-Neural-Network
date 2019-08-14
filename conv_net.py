@@ -48,6 +48,10 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
 
 from tensorflow.keras.callbacks import TensorBoard
 
+from tensorflow.keras.optimizers import SGD, RMSprop, Adagrad, Adadelta, Adam, Adamax, Nadam
+
+import keras
+
 import time
 import numpy as np
 import os
@@ -55,6 +59,8 @@ import os
 from sklearn.model_selection import train_test_split
 
 from PIL import Image
+
+import inspect
 
 def remove_mario_list(X):
 
@@ -84,20 +90,23 @@ def resize_32by32(X):
 
 
 
-def conv_net_custom(input_shape=None,num_classifiers=None,
+def conv_net_custom(input_shape=(32,100,1),num_classifiers=6,
                         layer1_filters=64,layer1_kernel=5,layer1_maxpool=(2,2),layer1_dropout=0.2,
                         layer2_filters=32,layer2_kernel=3,layer2_avgpool=(2,2),layer2_dropout=0.5,
                         layer3_units=16,
                         layer4_units=16,
+                        optimizer=RMSprop,
+                        learn_rate=0.001,
+                        grid_test = True
                         ):
     
     if not input_shape or not num_classifiers:
         print('You have to pass an input shape AND a number of classifiers!')
     else:
-
-        year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
-        model_name = f'conv_net_custom-{month}-{day}-{year}_{hour}-{minute}-{second}'
-        os.mkdir(f'logs/{model_name}')
+        if not grid_test:
+            year, month, day, hour, minute, second = time.strftime("%Y,%m,%d,%H,%M,%S").split(',')
+            model_name = f'conv_net_custom-{month}-{day}-{year}_{hour}-{minute}-{second}'
+            os.mkdir(f'logs/{model_name}')
 
         #create model
         model = Sequential()
@@ -107,7 +116,7 @@ def conv_net_custom(input_shape=None,num_classifiers=None,
         model.add(Dropout(layer1_dropout))
 
         model.add(Conv2D(filters=layer2_filters, kernel_size=layer2_kernel, activation='relu'))
-        model.add(AveragePooling2D(pool_size=layer2_avgpool)
+        model.add(AveragePooling2D(pool_size=layer2_avgpool))
         model.add(Dropout(layer2_dropout))
 
         model.add(Flatten())
@@ -120,13 +129,17 @@ def conv_net_custom(input_shape=None,num_classifiers=None,
         #Tensorboard
         # have to use backslash (\) instead of forward slash (/) here for some reason 
 
-        t_board= TensorBoard(log_dir=f'.\logs\{model_name}',update_freq=5000)
+        if not grid_test:
+            t_board= TensorBoard(log_dir=f'.\logs\{model_name}',update_freq=5000)
 
-        cp_callback = tf.keras.callbacks.ModelCheckpoint(f'data/model_checkpoints/{model_name}.ckpt',
-                                                 save_weights_only=True)
+            cp_callback = tf.keras.callbacks.ModelCheckpoint(f'data/model_checkpoints/{model_name}.ckpt',
+                                                    save_weights_only=True)
+
+        if 'learning_rate' in inspect.getfullargspec(optimizer)[0]:
+            optimizer = optimizer(learning_rate=learn_rate)
 
         #compile model using accuracy to measure model performance
-        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
 
         #train the model
         '''
@@ -134,8 +147,10 @@ def conv_net_custom(input_shape=None,num_classifiers=None,
         model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, callbacks=[t_board])
 
         '''
-
-        return model, t_board, cp_callback, model_name
+        if grid_test:
+            return model
+        else:
+            return model, t_board, cp_callback, model_name
 
 
 def conv_net_custom_2(input_shape=None,num_classifiers=None,
@@ -160,7 +175,7 @@ def conv_net_custom_2(input_shape=None,num_classifiers=None,
         model = Sequential()
         #add model layers
         model.add(Conv2D(filters=layer1_filters, kernel_size=layer1_kernel, activation='relu', input_shape=input_shape))        
-        model.add(MaxPooling2D(pool_size=layer1_maxpool)
+        model.add(MaxPooling2D(pool_size=layer1_maxpool))
         model.add(Dropout(layer1_dropout))
 
         model.add(Conv2D(filters=layer2_filters, kernel_size=layer2_kernel, activation='relu'))
@@ -266,7 +281,13 @@ if __name__ == "__main__":
         shape = (32,32,1)
 
 
-    model, t_board, cp_callback, model_name = conv_net_custom(input_shape=shape,num_classifiers=6) 
+    model, t_board, cp_callback, model_name = conv_net_custom(input_shape=shape,num_classifiers=6,
+                                                                layer1_dropout=0.2, layer1_filters=64, layer1_kernel=3, layer1_maxpool=(2, 2),                                                            
+                                                                layer2_avgpool=(3, 3), layer2_dropout=0.5, layer2_filters=32, layer2_kernel=3,
+                                                                layer3_units=16,
+                                                                layer4_units=16,
+                                                                optimizer=RMSprop,
+                                                                grid_test=False) 
 
     # model.fit(x=None, y=None, batch_size=None, epochs=1, verbose=1, callbacks=None, validation_split=0.0, validation_data=None, shuffle=True, class_weight=None, sample_weight=None, initial_epoch=0, steps_per_epoch=None, validation_steps=None, validation_freq=1)    
 
@@ -282,6 +303,6 @@ if __name__ == "__main__":
 
     #import pdb; pdb.set_trace()
 
-    model.fit(x=X,y=Y,validation_split=0.2,epochs=10,callbacks=[t_board,cp_callback]) #default verbose gives progress for each epoch   # ,callbacks=[t_board]
+    model.fit(x=X,y=Y,epochs=10,callbacks=[t_board,cp_callback],batch_size=16) #default verbose gives progress for each epoch   # ,callbacks=[t_board]
 
     model.save(f'data/models/{model_name}')

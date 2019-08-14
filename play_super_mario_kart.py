@@ -77,7 +77,7 @@ def keyboard_release():
 if __name__ == "__main__":
 
     filepath_dir = 'data/models/'
-    file_name = 'conv_net_custom-08-03-2019_23-37-06'
+    file_name = 'conv_net_custom-08-12-2019_23-35-31'#'conv_net_custom-08-11-2019_23-27-07'  #RMSprop -> not as well in ghost valley                           #'conv_net_custom-08-03-2019_23-37-06' -> adam works pretty well
     
     filepath = filepath_dir+file_name
 
