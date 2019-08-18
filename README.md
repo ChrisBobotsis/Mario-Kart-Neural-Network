@@ -255,10 +255,85 @@ An alternate model (see below) with another layer was tested but did result in a
 
 ## Results
 
+When implementing the model on the actual eumulator the results are pretty good. Please see below the model in action on the following 3 tracks:
 
+- Mario Circuit 1
+- Donut Plains 1
+- Ghost Valley 1
+
+Note: Due to recording the GIFs, the performance in these GIFs was worse than when only running the model.
+
+#### Mario Circuit 1
+
+![](images/mario_circuit_1_model.gif)
+
+#### Donut Plains 1
+
+![](images/donut_plains_1_model.gif)
+
+#### Ghost Valley 1
+
+![](images/ghost_valley_1_model.gif)
+
+#### Video of Model
+
+As well, please take a look at the following video to see the model complete an entire track all by itself!
+
+[![IMAGE ALT TEXT](http://img.youtube.com/viuQtDy82_KuU/0.jpg)](http://www.youtube.com/watch?v=uQtDy82_KuU "Mario Kart Neural Network in Action!")
+
+#### Out of Sample Testing
+
+As I mentioned earlier, I only trained on tracks from the first two cups. The intent was to see how well the model would generalize to previously unseen tracks (and thus images). Please see below for some of these tests.
+
+##### Koopa Beach 1
+
+Here with Koopa Beach, we can see that the model plays decently at the beginning but has issues realizing that the water is a boundary at some points (and drives right into it).
+
+![](images/koopa_beach_1_model.gif)
+
+However,  if we analyze this track in grayscale we can see why the model may have some issues with this track (note: I am playing this track, not the model).
+
+It seems that it is much harder to discern the clear edge between the track and the water, this is likely why the model makes Mario drive right into the water sometimes.
+
+![](images/koopa_beach_grayscale.gif)
 
 ## Future Updates
 
+There are numerous future improvements and implementations I would like to work on in the future and I will outline them here.
+
+#### Improvements
+
+##### 1. Find minimum graying out of image needed
+
+As mentioned before, I grayed out Mario from each image as it seemed the NN was learning which inputs to predict based on the aspect of Mario on the screen. I believe that this is also causing some issues with sharp corners as the grayed out area on the image blocks part of the edges. Therefore, I would like to implement something like the image below that would lower the area of the grayed out image.
+
+![](images/No_Mario_update.PNG)
+
+##### 2. Use RGB instead of Grayscale
+
+It is possible that using RGB instead of Grayscale will allow the model to generalize better to edges such as those from __Koopa Beach__. As we've seen the boundary between the track and water is very easy to see in colour, but not in grayscale.
+
+##### 3. Account for Momentum from Image
+
+I wanted to incorporate some sort of way to incorporate how the velocity of pixels from frame to frame. I noticed when I was playing Super Mario Kart I would check, when drifting, when I stopped moving left or right to figure out when to straighten up. I thought letting the NN have this information would also be valuable to learning.
+
+#### Implementations
+
+##### 1. Grand Prix with Knowledge Engineering
+
+While the Neural Network does a good job of driving the tracks, there is more to playing Mario Kart than that. Items are a big part of the game and so is knowing when to use each item, even depending on what place you are in.
+
+In the example below, we would want to know the following:
+
+1. What Item we have
+2. What Place we are in
+3. What inputs we are applying
+
+![](images/knowledge_engineering_grand_prix.PNG)
 
 
+1. We have a mushroom, this will give us a boost in speed
+2. We know that we are in 2nd place so this means that using a mushroom would be wise
+3. We know that we are currently going forward, so that means that using a mushroom would be okay and not cause us to move off track.
 
+In the case of having an item like a red shell, it may be helpful to know if there is another racer ahead of us. This means that using this item will be effetive. In this case, object detection could be used to determine if a racer is ahead of us. If a racer was not ahead of us, then holding the shell behind us (to block other shells from hitting us) would be the wisest choice.
