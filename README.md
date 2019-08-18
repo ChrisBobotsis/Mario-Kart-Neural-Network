@@ -279,7 +279,7 @@ Note: Due to recording the GIFs, the performance in these GIFs was worse than wh
 
 As well, please take a look at the following video to see the model complete an entire track all by itself!
 
-[![IMAGE ALT TEXT](http://img.youtube.com/viuQtDy82_KuU/0.jpg)](http://www.youtube.com/watch?v=uQtDy82_KuU "Mario Kart Neural Network in Action!")
+[![Neural Network In Action!](images/thumbnail.jpg)](http://www.youtube.com/watch?v=uQtDy82_KuU "Mario Kart Neural Network in Action!")
 
 #### Out of Sample Testing
 
