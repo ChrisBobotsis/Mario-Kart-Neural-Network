@@ -70,7 +70,7 @@ pytz==2018.9
 PyWavelets==1.0.3
 pywin32==224
 pywinpty==0.5.5
-PyYAML==3.13
+PyYAML==5.4
 pyzmq==18.0.2
 qtconsole==4.5.1
 scikit-image==0.15.0
